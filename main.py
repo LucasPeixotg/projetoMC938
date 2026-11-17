@@ -1,6 +1,7 @@
 
 
 # constants
+MASK_63 = (1 << 63) - 1
 MASK_329 = (1 << 329) - 1
 MASK_11956 = (1 << 11956) - 1
 T = (3**8) * (5**4) * (19**4) * (62**4)
@@ -10,8 +11,13 @@ def rotl(word: int, shift: int) -> int:
     shift %= 329
     return ((word << shift) | (word >> (329 - shift))) & MASK_329
 
-def rotation_amount(alfa: int) -> list[tuple[int,int,int,int]]:
-    B = alfa % T
+def rotr(word: int, shift: int) -> int:
+    """right rotation of 329 bits"""
+    shift %= 329
+    return ((word >> shift) | (word << (329 - shift))) & MASK_329
+
+def rotation_amount(a_r: int) -> list[tuple[int,int,int,int]]:
+    B = a_r % T
 
     r1 = (0, 0, 0, 0)
     for t in range(4):
@@ -50,8 +56,8 @@ def x_function(word: int) -> int:
     """
     yi = xi+1xi+2 + xi + xi+2.
     """
-    x1 = rotl(word, 1)
-    x2 = rotl(word, 2)
+    x1 = rotr(word, 1)
+    x2 = rotr(word, 2)
     y = ((x1 & x2) ^ word ^ x2) & MASK_329
     return y
 
@@ -76,7 +82,12 @@ def column_parity_mixer(state: list[int], r1: int, r2: int, r3: int) -> list[int
     ]
 
 def affine_layer(state: list[int], alfa: int) -> list[int]:
-    r1, r2, r3, i_values, j_values, l_values = rotation_amount(alfa)
+    alfa_r = alfa & MASK_63
+    
+    full_alfa_c = alfa >> 63
+    divided_alfa_c = [(full_alfa_c >> (329 * i)) & MASK_329 for i in range(5)]
+
+    r1, r2, r3, i_values, j_values, l_values = rotation_amount(alfa_r)
 
     w0, w1, w2, w3, w4 = state
 
@@ -100,7 +111,13 @@ def affine_layer(state: list[int], alfa: int) -> list[int]:
     w4 = rotl(w4, 248 + l_values[3])
     w0, w1, w2, w3, w4 = column_parity_mixer([w0, w1, w2, w3, w4], r1[3], r2[3], r3[3])
 
-    return [w0, w1, w2, w3, w4]
+    return [
+        w0 ^ divided_alfa_c[0], 
+        w1 ^ divided_alfa_c[1], 
+        w2 ^ divided_alfa_c[2], 
+        w3 ^ divided_alfa_c[3], 
+        w4 ^ divided_alfa_c[4]
+    ]
 
 def fasta(K: int):
     K &= MASK_329
