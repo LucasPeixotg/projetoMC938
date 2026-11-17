@@ -64,8 +64,23 @@ def non_linear_layer(state: list[int]) -> list[int]:
         x_function(state[4]),
     ]
 
+def column_parity_mixer(state: list[int], r1: int, r2: int) -> list[int]:
+    w1, w2, w3, w4, w5 = state
+    theta_result = theta(w1 ^ w2 ^ w3 ^ w4 ^ w5, r1, r2)
+    return [
+        w1 ^ theta_result,
+        w2 ^ theta_result,
+        w3 ^ theta_result,
+        w4 ^ theta_result,
+        w5 ^ theta_result,
+    ]
+
 def affine_layer(words: list[int], alfa: int):
+    r1, r2, r3, i_values, j_values, l_values = rotation_amount(alfa)
+
     pass
+
+
 
 if __name__ == "__main__":
     print(rotl(124, 13))
