@@ -2,6 +2,7 @@
 
 # constants
 MASK_329 = (1 << 329) - 1
+MASK_11956 = (1 << 11956) - 1
 T = (3**8) * (5**4) * (19**4) * (62**4)
 
 def rotl(word: int, shift: int) -> int:
@@ -74,7 +75,7 @@ def column_parity_mixer(state: list[int], r1: int, r2: int, r3: int) -> list[int
         w4 ^ theta_result
     ]
 
-def affine_layer(state: list[int], alfa: int):
+def affine_layer(state: list[int], alfa: int) -> list[int]:
     r1, r2, r3, i_values, j_values, l_values = rotation_amount(alfa)
 
     w0, w1, w2, w3, w4 = state
@@ -99,8 +100,31 @@ def affine_layer(state: list[int], alfa: int):
     w4 = rotl(w4, 248 + l_values[3])
     w0, w1, w2, w3, w4 = column_parity_mixer([w0, w1, w2, w3, w4], r1[3], r2[3], r3[3])
 
+    return [w0, w1, w2, w3, w4]
 
+def fasta(K: int):
+    K &= MASK_329
 
+    state = [
+        K, 
+        rotl(K, 1),
+        rotl(K, 2),
+        rotl(K, 3),
+        rotl(K, 4),
+    ]
+
+    alfas = [0, 1, 2, 3, 4, 5, 6]
+
+    for i in range(6):
+        state = affine_layer(state, alfas[i])
+        state = non_linear_layer(state)
+    state = affine_layer(state, alfas[6])
+
+    keystream = 0
+    for i in range(5):
+        keystream |= (state[i] ^ K) << (i * 329)
+
+    return keystream
 
 
 
