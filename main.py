@@ -9,10 +9,6 @@ def rotl(word: int, shift: int) -> int:
     shift %= 329
     return ((word << shift) | (word >> (329 - shift))) & MASK_329
 
-
-def x_function(word: int) -> int:
-    pass
-
 def rotation_amount(alfa: int) -> list[tuple[int,int,int,int]]:
     B = alfa % T
 
@@ -49,6 +45,24 @@ def rotation_amount(alfa: int) -> list[tuple[int,int,int,int]]:
 def theta(word: int, r1: int, r2: int) -> int:
     r3 = 7 + ((2 * r1 + r2) % 3)
     return word ^ rotl(word, r1) ^ rotl(word, r2) ^ rotl(word, r3) 
+
+def x_function(word: int) -> int:
+    """
+    yi = xi+1xi+2 + xi + xi+2.
+    """
+    x1 = rotl(word, 1)  # x_{i+1}
+    x2 = rotl(word, 2)  # x_{i+2}
+    y = ((x1 & x2) ^ word ^ x2) & MASK_329
+    return y
+
+def non_linear_layer(state: list[int]) -> list[int]:
+    return [
+        x_function(state[0]),
+        x_function(state[1]),
+        x_function(state[2]),
+        x_function(state[3]),
+        x_function(state[4]),
+    ]
 
 def affine_layer(words: list[int], alfa: int):
     pass
