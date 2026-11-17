@@ -16,32 +16,32 @@ def rotr(word: int, shift: int) -> int:
     shift %= 329
     return ((word >> shift) | (word << (329 - shift))) & MASK_329
 
-def rotation_amount(a_r: int) -> list[tuple[int,int,int,int]]:
+def rotation_amount(a_r: int) -> list[list[int]]:
     B = a_r % T
 
-    r1 = (0, 0, 0, 0)
+    r1 = [0, 0, 0, 0]
     for t in range(4):
         r1[t] = 1 + (B % 3)
         B //= 3
 
-    r2 = (0, 0, 0, 0)
-    r3 = (0, 0, 0, 0)
+    r2 = [0, 0, 0, 0]
+    r3 = [0, 0, 0, 0]
     for t in range(4):
         r2[t] = 4 + (B % 3)
         r3[t] = 7 + ((2 * r1[t] + r2[t] + 1) % 3)
         B //= 3
 
-    i_values = (0, 0, 0, 0)
+    i_values = [0, 0, 0, 0]
     for t in range(4):
         i_values[t] = B % 5
         B //= 5
 
-    j_values = (0, 0, 0, 0)
+    j_values = [0, 0, 0, 0]
     for t in range(4):
         j_values[t] = B % 19
         B //= 19
 
-    l_values = (0, 0, 0, 0)
+    l_values = [0, 0, 0, 0]
     for t in range(4):
         l_values[t] = B % 62
         B //= 62
@@ -146,4 +146,5 @@ def fasta(K: int):
 
 
 if __name__ == "__main__":
-    print(rotl(124, 13))
+    key = 8921634871234
+    print(fasta(key))
